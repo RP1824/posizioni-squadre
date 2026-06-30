@@ -1,0 +1,13 @@
+{
+  "name": "Invia Posizione - Squadra 122",
+  "short_name": "Squadra 122",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-144.png", "sizes": "144x144", "type": "image/png" }
+  ],
+  "theme_color": "#1a73e8",
+  "background_color": "#0d1b2a",
+  "display": "standalone",
+  "start_url": "squadra-122.html",
+  "scope": "squadra-122.html"
+}

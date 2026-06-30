@@ -1,0 +1,13 @@
+{
+  "name": "Invia Posizione - Squadra 18",
+  "short_name": "Squadra 18",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-144.png", "sizes": "144x144", "type": "image/png" }
+  ],
+  "theme_color": "#1a73e8",
+  "background_color": "#0d1b2a",
+  "display": "standalone",
+  "start_url": "squadra-18.html",
+  "scope": "squadra-18.html"
+}
