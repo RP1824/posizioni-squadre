@@ -101,7 +101,7 @@
 
 <script>
   const NUMERO_SQUADRA = "103";
-  const WEBAPP_URL     = "https://script.google.com/macros/s/AKfycbxucgPCD03M3pWcyPwd6wvKcIfbURxUGp0YFAtT7Z1se7CGlQOjTCYfeok7krz4Kqt-Qg/exec";
+  const WEBAPP_URL     = "https://script.google.com/macros/s/AKfycbwM3g0zMjkoiVaZMx_0X3hDtpWHAYQHax2CRuK6bW_yYCuaVqmQhV_oy1TZDz9YF2K_/exec";
   const CHIAVE_TOKEN   = "token_squadra_103";
 
   function generaToken() {
@@ -129,7 +129,6 @@
     }
   }
 
-  // Controlla se la squadra ha già inviato posizioni oggi, e le mostra
   function controllaStatoOggi() {
     const callbackName = "cbStato_" + Date.now();
     const script = document.createElement("script");
@@ -159,7 +158,6 @@
     document.body.appendChild(script);
   }
 
-  // All'avvio, decide se mostrare PIN o pulsante GPS
   window.onload = function() {
     const token = getToken();
     if (token) {
