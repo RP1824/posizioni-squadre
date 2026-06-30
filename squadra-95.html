@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Posizione">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="icon-144.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
+  <link rel="icon" sizes="192x192" href="icon-192.png">
+  <link rel="manifest" href="manifest-95.json">
+  <title>Invia Posizione</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1b2a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #fff; padding: 24px; }
+    .card { width: 100%; max-width: 360px; background: #162032; border-radius: 20px; padding: 36px 28px 32px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); text-align: center; }
+    .icon-wrap { width: 72px; height: 72px; border-radius: 18px; background: linear-gradient(135deg, #1a73e8, #0d47a1); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 4px 20px rgba(26,115,232,0.4); }
+    .icon-wrap svg { width: 38px; height: 38px; fill: #fff; }
+    h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 6px; }
+    .subtitle { font-size: 0.85rem; color: #7a93b0; margin-bottom: 20px; line-height: 1.5; }
+    .squadra-label { font-size: 0.75rem; color: #4a8ab0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .squadra-nome { font-size: 1rem; font-weight: 700; color: #fff; background: #1e3050; border-radius: 10px; padding: 10px 16px; margin-bottom: 8px; }
+    .ambito-badge { font-size: 0.75rem; color: #4a8ab0; margin-bottom: 16px; }
+    .stato-oggi { display: none; background: #14301f; border: 1px solid #1f4a30; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.82rem; color: #6fe0a8; text-align: left; line-height: 1.5; }
+    .stato-oggi.visible { display: block; }
+    .stato-oggi strong { color: #9ef0c4; }
+    .btn-gps { width: 100%; padding: 18px; border-radius: 14px; border: none; background: linear-gradient(135deg, #1a73e8, #1558c0); color: #fff; font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s, transform 0.15s; box-shadow: 0 4px 16px rgba(26,115,232,0.35); }
+    .btn-gps:active { opacity: 0.85; transform: scale(0.98); }
+    .btn-gps:disabled { background: #2a3a50; color: #4a6080; cursor: default; box-shadow: none; }
+    .status { font-size: 0.85rem; border-radius: 10px; padding: 12px 16px; margin-top: 16px; display: none; line-height: 1.5; white-space: pre-line; }
+    .status.errore { color: #e74c3c; background: #2a0d0d; }
+    .status.avviso { color: #f39c12; background: #2a1f00; }
+    .status.visible { display: block; }
+    .pin-box { display: none; }
+    .pin-box.visible { display: block; }
+    .pin-label { font-size: 0.8rem; color: #7a93b0; margin-bottom: 10px; line-height: 1.4; text-align: left; }
+    .pin-input { width: 100%; padding: 14px; border-radius: 10px; border: 1.5px solid #2a4060; background: #0d1b2a; color: #fff; font-size: 1.1rem; text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .pin-input:focus { outline: none; border-color: #1a73e8; }
+    .btn-conferma { width: 100%; padding: 16px; border-radius: 12px; border: none; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .btn-conferma:active { opacity: 0.85; }
+    .btn-conferma:disabled { background: #2a3a50; color: #4a6080; }
+    .sending-overlay { display: none; position: fixed; inset: 0; background: rgba(13,27,42,0.95); align-items: center; justify-content: center; flex-direction: column; gap: 16px; z-index: 100; }
+    .sending-overlay.visible { display: flex; }
+    .spinner { width: 52px; height: 52px; border: 4px solid #1e3050; border-top-color: #1a73e8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sending-label { font-size: 0.9rem; color: #7a93b0; }
+    .success-box { display: none; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+    .success-box.visible { display: flex; }
+    .check-circle { width: 72px; height: 72px; border-radius: 50%; background: #0d2a18; display: flex; align-items: center; justify-content: center; }
+    .check-circle svg { width: 36px; height: 36px; stroke: #27ae60; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .success-title { font-size: 1.2rem; font-weight: 700; }
+    .success-coords { font-size: 0.8rem; color: #4a8050; font-family: monospace; }
+    .success-ora { font-size: 0.8rem; color: #7a93b0; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 24 24"><path fill="#ffffff" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+  </div>
+  <h1>Invia Posizione</h1>
+  <p class="subtitle" id="subtitleText">Premi il pulsante ogni mattina<br>per inviare la tua posizione.</p>
+  <p class="squadra-label">Squadra</p>
+  <div class="squadra-nome">95 &ndash; LANGA CEBANA</div>
+  <div class="ambito-badge">Ambito CN 8</div>
+
+  <div class="stato-oggi" id="statoOggi"></div>
+
+  <!-- Casella PIN, visibile solo se il dispositivo non è registrato -->
+  <div class="pin-box" id="pinBox">
+    <p class="pin-label">Prima di iniziare, inserisci il PIN fornito dall'ufficio per registrare questo telefono.</p>
+    <input type="text" class="pin-input" id="pinInput" placeholder="ES. AL1-7K9X2M" maxlength="20">
+    <button class="btn-conferma" id="btnConferma" onclick="registraDispositivo()">Conferma PIN</button>
+  </div>
+
+  <!-- Pulsante GPS, visibile solo se già registrato -->
+  <button class="btn-gps" id="btnGps" onclick="rilevaPosizione()" style="display:none;">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+    Rileva e invia GPS
+  </button>
+
+  <div class="status" id="statusBox"></div>
+  <a href="#" id="linkReset" onclick="reimpostaPin(); return false;" style="display:none; color:#4a8ab0; font-size:0.78rem; margin-top:14px; text-decoration:underline;">Reimposta PIN</a>
+  <p style="font-size:0.68rem; color:#3a5070; margin-top:18px;">v9 - 26/06/2026</p>
+</div>
+
+<div class="sending-overlay" id="overlay">
+  <div class="spinner" id="spinner"></div>
+  <div class="sending-label" id="sendingLabel">Rilevamento GPS...</div>
+  <div class="success-box" id="successBox">
+    <div class="check-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <p class="success-title">Posizione inviata!</p>
+    <p class="success-coords" id="successCoords"></p>
+    <p class="success-ora" id="successOra"></p>
+  </div>
+</div>
+
+<script>
+  const NUMERO_SQUADRA = "95";
+  const WEBAPP_URL     = "https://script.google.com/macros/s/AKfycbxucgPCD03M3pWcyPwd6wvKcIfbURxUGp0YFAtT7Z1se7CGlQOjTCYfeok7krz4Kqt-Qg/exec";
+  const CHIAVE_TOKEN   = "token_squadra_95";
+
+  function generaToken() {
+    return "tk_" + Date.now() + "_" + Math.random().toString(36).substring(2, 12);
+  }
+
+  function getToken() {
+    return localStorage.getItem(CHIAVE_TOKEN);
+  }
+
+  function setToken(token) {
+    localStorage.setItem(CHIAVE_TOKEN, token);
+  }
+
+  function mostraStatus(msg, tipo) {
+    const box = document.getElementById("statusBox");
+    box.textContent = msg;
+    box.className = "status " + tipo + " visible";
+  }
+
+  function reimpostaPin() {
+    if (confirm("Vuoi davvero reimpostare il PIN su questo telefono? Dovrai registrarlo di nuovo.")) {
+      localStorage.removeItem(CHIAVE_TOKEN);
+      location.reload();
+    }
+  }
+
+  // Controlla se la squadra ha già inviato posizioni oggi, e le mostra
+  function controllaStatoOggi() {
+    const callbackName = "cbStato_" + Date.now();
+    const script = document.createElement("script");
+
+    window[callbackName] = function(data) {
+      delete window[callbackName];
+      if (script.parentNode) document.body.removeChild(script);
+
+      if (data.ok && data.inviiOggi && data.inviiOggi.length > 0) {
+        const box = document.getElementById("statoOggi");
+        const numInvii = data.inviiOggi.length;
+        const elencoOrari = data.inviiOggi.join(", ");
+        if (numInvii === 1) {
+          box.innerHTML = "&#x2713; <strong>Hai gi\u00e0 inviato la posizione oggi</strong><br>alle " + elencoOrari;
+        } else {
+          box.innerHTML = "&#x2713; <strong>Hai gi\u00e0 inviato " + numInvii + " posizioni oggi</strong><br>alle " + elencoOrari;
+        }
+        box.classList.add("visible");
+      }
+    };
+
+    script.onerror = function() {
+      if (script.parentNode) document.body.removeChild(script);
+    };
+
+    script.src = WEBAPP_URL + "?azione=statoMiaSquadra&squadra=" + encodeURIComponent(NUMERO_SQUADRA) + "&callback=" + callbackName;
+    document.body.appendChild(script);
+  }
+
+  // All'avvio, decide se mostrare PIN o pulsante GPS
+  window.onload = function() {
+    const token = getToken();
+    if (token) {
+      document.getElementById("btnGps").style.display = "flex";
+      document.getElementById("pinBox").classList.remove("visible");
+      document.getElementById("linkReset").style.display = "inline";
+      controllaStatoOggi();
+    } else {
+      document.getElementById("pinBox").classList.add("visible");
+      document.getElementById("btnGps").style.display = "none";
+      document.getElementById("linkReset").style.display = "none";
+      document.getElementById("subtitleText").innerHTML = "Registra questo telefono la prima volta,<br>poi userai solo il pulsante GPS.";
+    }
+  };
+
+  function registraDispositivo() {
+    const pin = document.getElementById("pinInput").value.trim();
+    if (!pin) { mostraStatus("Inserisci il PIN fornito dall'ufficio.", "errore"); return; }
+
+    const btn = document.getElementById("btnConferma");
+    btn.disabled = true;
+    btn.textContent = "Verifica in corso...";
+    document.getElementById("statusBox").className = "status";
+
+    const nuovoToken = generaToken();
+    const callbackName = "cbReg_" + Date.now();
+    const script = document.createElement("script");
+
+    window[callbackName] = function(data) {
+      btn.disabled = false;
+      btn.textContent = "Conferma PIN";
+      delete window[callbackName];
+      if (script.parentNode) document.body.removeChild(script);
+
+      if (data.ok) {
+        setToken(nuovoToken);
+        document.getElementById("pinBox").classList.remove("visible");
+        document.getElementById("btnGps").style.display = "flex";
+        document.getElementById("linkReset").style.display = "inline";
+        document.getElementById("subtitleText").innerHTML = "Premi il pulsante ogni mattina<br>per inviare la tua posizione.";
+        mostraStatus("Telefono registrato correttamente!", "avviso");
+        controllaStatoOggi();
+      } else if (data.msg === "PIN errato") {
+        mostraStatus("PIN errato. Controlla e riprova.", "errore");
+      } else if (data.msg === "limite_dispositivi") {
+        mostraStatus("Numero massimo di dispositivi raggiunto per questa squadra. Contatta l'ufficio.", "errore");
+      } else {
+        mostraStatus("Errore: " + data.msg, "errore");
+      }
+    };
+
+    script.onerror = function() {
+      btn.disabled = false;
+      btn.textContent = "Conferma PIN";
+      if (script.parentNode) document.body.removeChild(script);
+      mostraStatus("Errore di connessione. Controlla la rete e riprova.", "errore");
+    };
+
+    script.src = WEBAPP_URL
+      + "?azione=registra"
+      + "&squadra=" + encodeURIComponent(NUMERO_SQUADRA)
+      + "&pin=" + encodeURIComponent(pin)
+      + "&token=" + encodeURIComponent(nuovoToken)
+      + "&callback=" + callbackName;
+
+    document.body.appendChild(script);
+  }
+
+  function rilevaPosizione() {
+    if (!navigator.geolocation) { mostraStatus("GPS non disponibile.", "errore"); return; }
+    const btn = document.getElementById("btnGps");
+    btn.disabled = true;
+    document.getElementById("statusBox").className = "status";
+    document.getElementById("overlay").classList.add("visible");
+    document.getElementById("spinner").style.display = "block";
+    document.getElementById("sendingLabel").style.display = "block";
+    document.getElementById("sendingLabel").textContent = "Rilevamento GPS...";
+    document.getElementById("successBox").classList.remove("visible");
+
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        document.getElementById("sendingLabel").textContent = "Invio in corso...";
+        chiamaWebApp(lat, lon, btn);
+      },
+      function(err) {
+        document.getElementById("overlay").classList.remove("visible");
+        btn.disabled = false;
+        const msg = err.code===1 ? "Permesso GPS negato. Vai nelle impostazioni e abilita la posizione."
+                  : err.code===2 ? "Posizione non disponibile. Assicurati di avere il GPS attivo."
+                  : "Timeout GPS. Spostati all’aperto e riprova.";
+        mostraStatus(msg, "errore");
+      },
+      { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+    );
+  }
+
+  function chiamaWebApp(lat, lon, btn) {
+    const token = getToken();
+    const callbackName = "cb_" + Date.now();
+    const script = document.createElement("script");
+
+    window[callbackName] = function(data) {
+      document.getElementById("overlay").classList.remove("visible");
+      btn.disabled = false;
+      delete window[callbackName];
+      if (script.parentNode) document.body.removeChild(script);
+
+      if (data.ok) {
+        document.getElementById("overlay").classList.add("visible");
+        document.getElementById("spinner").style.display = "none";
+        document.getElementById("sendingLabel").style.display = "none";
+        document.getElementById("successBox").classList.add("visible");
+        document.getElementById("successCoords").textContent = "\uD83D\uDCCD " + lat + ", " + lon;
+        document.getElementById("successOra").textContent = "Registrata alle " + data.ora;
+        setTimeout(function() { document.getElementById("overlay").classList.remove("visible"); }, 3000);
+        controllaStatoOggi();
+      } else if (data.msg === "dispositivo_non_autorizzato") {
+        mostraStatus("Questo telefono non \u00e8 registrato per questa squadra. Contatta l'ufficio.", "errore");
+      } else {
+        mostraStatus("Errore: " + data.msg, "errore");
+      }
+    };
+
+    script.onerror = function() {
+      document.getElementById("overlay").classList.remove("visible");
+      btn.disabled = false;
+      if (script.parentNode) document.body.removeChild(script);
+      mostraStatus("Errore di connessione. Controlla la rete e riprova.", "errore");
+    };
+
+    script.src = WEBAPP_URL
+      + "?squadra=" + encodeURIComponent(NUMERO_SQUADRA)
+      + "&lat=" + lat
+      + "&lon=" + lon
+      + "&token=" + encodeURIComponent(token)
+      + "&callback=" + callbackName;
+
+    document.body.appendChild(script);
+  }
+</script>
+</body>
+</html>
